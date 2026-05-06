@@ -27,6 +27,8 @@ def main():
     auth_subparsers.add_parser("login", help="Authenticate with YouTube")
     auth_subparsers.add_parser("logout", help="Revoke credentials")
     
+    subparsers.add_parser("quota", help="Check YouTube API quota status")
+    
     channel_parser = subparsers.add_parser("channel", help="Channel operations")
     channel_subparsers = channel_parser.add_subparsers(dest="channel_command")
     channel_subparsers.add_parser("info", help="Get channel information")
@@ -114,6 +116,8 @@ def main():
     try:
         if args.command == "auth":
             handle_auth(args)
+        elif args.command == "quota":
+            handle_quota()
         elif args.command == "channel":
             handle_channel(args)
         elif args.command == "video":
@@ -141,6 +145,16 @@ def handle_auth(args):
             print("No credentials found to revoke.")
     else:
         print("Usage: youtube-manager auth {login|logout}")
+
+
+def handle_quota():
+    """Handle quota check command."""
+    client = YouTubeClient()
+    status = client.check_quota()
+    if status["available"]:
+        print("Quota available")
+    else:
+        print(f"Quota exhausted — {status['message']}")
 
 
 def handle_channel(args):

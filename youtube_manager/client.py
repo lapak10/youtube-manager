@@ -57,6 +57,14 @@ class YouTubeClient:
         """
         return self.channels.update_channel(title, description, keywords, country)
     
+    def check_quota(self) -> dict:
+        """Check if YouTube API quota is available.
+        
+        Returns:
+            Dictionary with 'available' (bool) and 'message' (str).
+        """
+        return self.channels.check_quota()
+    
     def list_videos(self, channel_id: str | None = None, max_results: int = 50, 
                     include_private: bool = False) -> list[dict]:
         """List videos from a channel.

@@ -45,6 +45,7 @@ youtube_manager/
 |---------|-------------|
 | `auth login` | Authenticate with YouTube (OAuth2) |
 | `auth logout` | Revoke credentials |
+| `quota` | Check YouTube API quota status |
 | `channel info` | Get channel metadata |
 | `channel stats` | Get subscriber/view/video counts |
 | `channel update --description "..." --keywords "..." --country IN` | Update channel branding |

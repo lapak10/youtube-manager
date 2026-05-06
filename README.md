@@ -70,6 +70,9 @@ python main.py auth login
 
 # Logout (revoke credentials)
 python main.py auth logout
+
+# Check quota status
+python main.py quota
 ```
 
 ### Channel Operations

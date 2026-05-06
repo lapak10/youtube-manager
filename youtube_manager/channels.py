@@ -111,3 +111,23 @@ class ChannelOperations:
         )
         
         return request.execute()
+    
+    def check_quota(self) -> dict:
+        """Check if YouTube API quota is available.
+        
+        Makes a minimal-cost API call (1 unit) and returns status.
+        
+        Returns:
+            Dictionary with 'available' (bool) and 'message' (str).
+        """
+        try:
+            self.youtube.channels().list(
+                part="id",
+                mine=True,
+                maxResults=1
+            ).execute()
+            return {"available": True, "message": "Quota available"}
+        except Exception as e:
+            if "quota" in str(e).lower():
+                return {"available": False, "message": "Quota exceeded"}
+            raise e
