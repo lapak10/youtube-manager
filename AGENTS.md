@@ -99,3 +99,11 @@ videos = client.list_videos(include_private=False)
 - Topics: UP culture, Bollywood roasts, desi daily life, men-vs-women, India-Pakistan jokes
 - Audience: Hindi/Hinglish speakers, Indian viewers
 - Issues to watch for: duplicate titles, empty descriptions, missing thumbnails, auto-generated titles
+
+## Resuming work
+
+To resume from where we left off, see the local (gitignored) `TODO.md` file for:
+- What was already done
+- What's pending (split into AI tasks vs owner tasks)
+
+The user may say "pick up where we left off" — read TODO.md and continue from the pending AI items.
