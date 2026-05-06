@@ -80,20 +80,27 @@ python main.py channel info
 
 # Get channel statistics
 python main.py channel stats
+
+# Update channel metadata
+python main.py channel update --description "Your channel description" --keywords "comedy, standup" --country IN
 ```
 
 ### Video Operations
 
 ```bash
-# List videos (default: 50)
+# List videos (public only by default)
 python main.py video list
 python main.py video list --max 100
+python main.py video list --include-private  # include private/unlisted
 
 # Get video details
 python main.py video get VIDEO_ID
 
 # Update video metadata
 python main.py video update VIDEO_ID --title "New Title" --description "New desc" --tags tag1 tag2 --privacy public
+
+# Set custom thumbnail (JPG/PNG, 1280x720, <2MB)
+python main.py video thumbnail VIDEO_ID --file thumbnail.jpg
 
 # Delete video
 python main.py video delete VIDEO_ID

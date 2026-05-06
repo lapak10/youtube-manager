@@ -31,15 +31,17 @@ class VideoOperations:
         
         return response["items"][0]
     
-    def list_videos(self, channel_id: str | None = None, max_results: int = 50) -> list[dict]:
+    def list_videos(self, channel_id: str | None = None, max_results: int = 50, 
+                    include_private: bool = False) -> list[dict]:
         """List videos from a channel.
         
         Args:
             channel_id: Channel ID. If None, uses authenticated user's channel.
             max_results: Maximum number of results to return.
+            include_private: If True, include private/unlisted videos.
         
         Returns:
-            List of video dictionaries.
+            List of video dictionaries (public videos by default).
         """
         if channel_id is None:
             channels_request = self.youtube.channels().list(
@@ -73,11 +75,19 @@ class VideoOperations:
             
             if video_ids:
                 videos_request = self.youtube.videos().list(
-                    part="snippet,contentDetails,statistics",
+                    part="snippet,contentDetails,statistics,status",
                     id=",".join(video_ids)
                 )
                 videos_response = videos_request.execute()
-                videos.extend(videos_response.get("items", []))
+                fetched = videos_response.get("items", [])
+                
+                if not include_private:
+                    fetched = [
+                        v for v in fetched
+                        if v.get("status", {}).get("privacyStatus") == "public"
+                    ]
+                
+                videos.extend(fetched)
             
             next_page_token = playlist_response.get("nextPageToken")
             if not next_page_token or len(videos) >= max_results:
@@ -117,6 +127,9 @@ class VideoOperations:
             "id": video_id,
             "snippet": snippet
         }
+        
+        if "etag" in video:
+            body["etag"] = video["etag"]
         
         if privacy_status is not None:
             body["status"] = {"privacyStatus": privacy_status}
@@ -196,6 +209,45 @@ class VideoOperations:
         
         return response
     
+    def set_thumbnail(self, video_id: str, thumbnail_path: str) -> dict:
+        """Set a custom thumbnail for a video.
+
+        Args:
+            video_id: YouTube video ID.
+            thumbnail_path: Path to the thumbnail image file.
+                            Recommended: 1280x720 pixels, under 2MB.
+                            Supported formats: JPG, PNG, GIF, BMP.
+
+        Returns:
+            Thumbnail upload response.
+
+        Raises:
+            FileNotFoundError: If thumbnail file doesn't exist.
+            ValueError: If file format is not supported.
+        """
+        if not os.path.exists(thumbnail_path):
+            raise FileNotFoundError(f"Thumbnail file not found: {thumbnail_path}")
+
+        valid_extensions = (".jpg", ".jpeg", ".png", ".gif", ".bmp")
+        ext = os.path.splitext(thumbnail_path)[1].lower()
+        if ext not in valid_extensions:
+            raise ValueError(
+                f"Unsupported file format: {ext}. "
+                f"Supported: {', '.join(valid_extensions)}"
+            )
+
+        media = MediaFileUpload(
+            thumbnail_path,
+            mimetype=f"image/{ext.lstrip('.').replace('jpg', 'jpeg')}",
+            resumable=False
+        )
+
+        request = self.youtube.thumbnails().set(
+            videoId=video_id,
+            media_body=media
+        )
+        return request.execute()
+
     def get_video_statistics(self, video_id: str) -> dict:
         """Get video statistics.
         

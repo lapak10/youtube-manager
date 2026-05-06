@@ -42,17 +42,34 @@ class YouTubeClient:
         """
         return self.channels.get_channel(channel_id)
     
-    def list_videos(self, channel_id: str | None = None, max_results: int = 50) -> list[dict]:
+    def update_channel(self, title: str | None = None, description: str | None = None,
+                       keywords: str | None = None, country: str | None = None) -> dict:
+        """Update channel metadata (title, description, keywords, country).
+        
+        Args:
+            title: New channel title.
+            description: New channel description.
+            keywords: New channel keywords (comma-separated).
+            country: New country code (e.g. 'IN', 'US').
+        
+        Returns:
+            Updated channel information.
+        """
+        return self.channels.update_channel(title, description, keywords, country)
+    
+    def list_videos(self, channel_id: str | None = None, max_results: int = 50, 
+                    include_private: bool = False) -> list[dict]:
         """List videos from a channel.
         
         Args:
             channel_id: Channel ID. If None, uses authenticated user's channel.
             max_results: Maximum number of results to return.
+            include_private: If True, include private/unlisted videos.
         
         Returns:
-            List of video dictionaries.
+            List of video dictionaries (public only by default).
         """
-        return self.videos.list_videos(channel_id, max_results)
+        return self.videos.list_videos(channel_id, max_results, include_private)
     
     def get_video(self, video_id: str) -> dict:
         """Get video details.
@@ -93,6 +110,18 @@ class YouTubeClient:
             True if successful.
         """
         return self.videos.delete_video(video_id)
+    
+    def set_thumbnail(self, video_id: str, thumbnail_path: str) -> dict:
+        """Set a custom thumbnail for a video.
+        
+        Args:
+            video_id: YouTube video ID.
+            thumbnail_path: Path to thumbnail image (JPG/PNG, 1280x720, <2MB).
+        
+        Returns:
+            Thumbnail upload response.
+        """
+        return self.videos.set_thumbnail(video_id, thumbnail_path)
     
     def upload_video(self, file_path: str, title: str, description: str = "",
                      tags: list[str] | None = None, category_id: str = "22",

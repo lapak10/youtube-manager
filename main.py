@@ -31,12 +31,18 @@ def main():
     channel_subparsers = channel_parser.add_subparsers(dest="channel_command")
     channel_subparsers.add_parser("info", help="Get channel information")
     channel_subparsers.add_parser("stats", help="Get channel statistics")
+    update_channel_parser = channel_subparsers.add_parser("update", help="Update channel metadata")
+    update_channel_parser.add_argument("--title", help="New channel title")
+    update_channel_parser.add_argument("--description", help="New channel description")
+    update_channel_parser.add_argument("--keywords", help="Channel keywords (comma-separated)")
+    update_channel_parser.add_argument("--country", help="Country code (e.g. IN, US)")
     
     video_parser = subparsers.add_parser("video", help="Video operations")
     video_subparsers = video_parser.add_subparsers(dest="video_command")
     
     list_videos_parser = video_subparsers.add_parser("list", help="List videos")
     list_videos_parser.add_argument("--max", type=int, default=50, help="Max results")
+    list_videos_parser.add_argument("--include-private", action="store_true", help="Include private/unlisted videos")
     
     get_video_parser = video_subparsers.add_parser("get", help="Get video details")
     get_video_parser.add_argument("video_id", help="Video ID")
@@ -57,6 +63,10 @@ def main():
     upload_parser.add_argument("--description", default="", help="Video description")
     upload_parser.add_argument("--tags", nargs="+", help="Video tags")
     upload_parser.add_argument("--privacy", default="private", choices=["private", "public", "unlisted"], help="Privacy status")
+    
+    thumbnail_parser = video_subparsers.add_parser("thumbnail", help="Set custom thumbnail for a video")
+    thumbnail_parser.add_argument("video_id", help="Video ID (e.g. sKY8e4-SDQg)")
+    thumbnail_parser.add_argument("--file", required=True, help="Path to thumbnail image (JPG/PNG, 1280x720 recommended, <2MB)")
     
     playlist_parser = subparsers.add_parser("playlist", help="Playlist operations")
     playlist_subparsers = playlist_parser.add_subparsers(dest="playlist_command")
@@ -142,6 +152,14 @@ def handle_channel(args):
     elif args.channel_command == "stats":
         stats = client.channels.get_channel_statistics()
         print(format_output(stats))
+    elif args.channel_command == "update":
+        result = client.update_channel(
+            title=args.title,
+            description=args.description,
+            keywords=args.keywords,
+            country=args.country
+        )
+        print(format_output(result))
     else:
         print("Usage: youtube-manager channel {info|stats}")
 
@@ -150,7 +168,7 @@ def handle_video(args):
     client = YouTubeClient()
     
     if args.video_command == "list":
-        videos = client.list_videos(max_results=args.max)
+        videos = client.list_videos(max_results=args.max, include_private=args.include_private)
         print(format_output(videos))
     elif args.video_command == "get":
         video = client.get_video(args.video_id)
@@ -175,6 +193,9 @@ def handle_video(args):
             tags=args.tags,
             privacy_status=args.privacy
         )
+        print(format_output(result))
+    elif args.video_command == "thumbnail":
+        result = client.set_thumbnail(args.video_id, args.file)
         print(format_output(result))
     else:
         print("Usage: youtube-manager video {list|get|update|delete|upload}")
